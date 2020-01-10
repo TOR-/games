@@ -3,11 +3,18 @@
 
 #include <SDL2/SDL.h>
 #include <cstdint>
+#include <vector>
 
 struct vec2
 {
 	float x;
 	float y;
+};
+
+struct ball
+{
+	struct vec2 pos;
+	struct vec2 vel;
 };
 
 enum PaddleDir
@@ -28,7 +35,7 @@ class Game
 		static const int WALL_THICKNESS = 20;
 		static const int PADDLE_THICKNESS = WALL_THICKNESS;
 		static const int PADDLE_HEIGHT = 6*PADDLE_THICKNESS;
-		static const int PADDLE_SPEED = 300.0f;
+		static const int PADDLE_SPEED = 200.0f;
 		static const int BALL_THICKNESS = WALL_THICKNESS;
 
 	private:
@@ -40,8 +47,7 @@ class Game
 		SDL_Renderer* _Renderer;
 		bool _IsRunning;
 		uint32_t _TicksCount;
-		struct vec2 _pos_ball;
-		struct vec2 _vel_ball;
+		std::vector<struct ball> _balls;
 		struct vec2 _pos_pad_l;
 		struct vec2 _pos_pad_r;
 		PaddleDir _paddle_dir_l;
