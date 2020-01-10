@@ -4,7 +4,7 @@
 
 #include "Game.h"
 
-Game::Game(int nplayers, int nballs): _nplayers(nplayers), _nballs(nballs), _Window(nullptr), _IsRunning(true) {};
+Game::Game(int nplayers, int nballs): _nplayers(nplayers), _nballs(nballs), _Window(nullptr), _IsRunning(true), _hits(0) {};
 
 bool Game::Initialise()
 {
@@ -15,7 +15,7 @@ bool Game::Initialise()
 		return false;
 	}
 
-	_Window = SDL_CreateWindow( "PONG ONE PLAYER", 100, 100, WIDTH, HEIGHT, 0 /* SDL_WINDOW_FULLSCREEN */);
+	_Window = SDL_CreateWindow( "PONG ONE PLAYER", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if (!_Window)
 	{
 		SDL_Log("Failed to create window: %s", SDL_GetError());
@@ -132,13 +132,10 @@ void Game::UpdateGame()
 				_pos_pad_r.y = HEIGHT - PADDLE_HEIGHT/2.0f - WALL_THICKNESS;
 		}
 
-	//for(auto b : _balls)
 	for(int i = 0; i < _nballs; i++)
 	{
 		_balls[i].pos.x += _balls[i].vel.x * dt;
 		_balls[i].pos.y += _balls[i].vel.y * dt;
-		//std::cout << "(" << "{" << i << "}" << _balls[i].pos.x << "," << _balls[i].pos.y << ":" <<  _balls[i].vel.x << "," << _balls[i].vel.y << ")" << "[" << dt << "]";
-		//std::cout << "(" << b.pos.x << "," << b.pos.y << ":" << b.vel.x << "," << b.vel.y << ")" << "[" << dt << "]";
 		// Collision
 		if ((_balls[i].pos.y <= WALL_THICKNESS && _balls[i].vel.y < 0.0f)
 				||(_balls[i].pos.y >= HEIGHT-WALL_THICKNESS && _balls[i].vel.y > 0.0f)) 
@@ -162,6 +159,8 @@ void Game::UpdateGame()
 			else
 				_balls[i].vel.x *= 1.1f;
 			_balls[i].vel.x *= -1;
+			_hits++;
+			std::cout << "Hits: "<<_hits<<std::endl;
 		}
 		if (2 == _nplayers)
 		{
@@ -185,7 +184,6 @@ void Game::UpdateGame()
 			}
 		}
 	}
-	//std::cout << std::endl;
 }
 
 SDL_Rect wall_top   {0, 0, Game::WIDTH, Game::WALL_THICKNESS};
