@@ -18,7 +18,7 @@ enum PaddleDir
 class Game
 {
 	public:
-		Game();
+		Game(int nplayers, int nballs);
 		bool Initialise();
 		void RunLoop();
 		void Shutdown();
@@ -28,6 +28,7 @@ class Game
 		static const int WALL_THICKNESS = 20;
 		static const int PADDLE_THICKNESS = WALL_THICKNESS;
 		static const int PADDLE_HEIGHT = 6*PADDLE_THICKNESS;
+		static const int PADDLE_SPEED = 300.0f;
 		static const int BALL_THICKNESS = WALL_THICKNESS;
 
 	private:
@@ -41,7 +42,11 @@ class Game
 		uint32_t _TicksCount;
 		struct vec2 _pos_ball;
 		struct vec2 _vel_ball;
-		struct vec2 _pos_pad;
-		PaddleDir _paddle_dir;
+		struct vec2 _pos_pad_l;
+		struct vec2 _pos_pad_r;
+		PaddleDir _paddle_dir_l;
+		PaddleDir _paddle_dir_r;
+		int _nplayers;
+		int _nballs;
 };
 #endif

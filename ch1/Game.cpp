@@ -1,9 +1,10 @@
+#include <iostream>
 #include <random>
 #include <SDL2/SDL.h>
 
 #include "Game.h"
 
-Game::Game(): _Window(nullptr), _IsRunning(true) {};
+Game::Game(int nplayers, int nballs): _nplayers(nplayers), _nballs(nballs), _Window(nullptr), _IsRunning(true) {};
 
 bool Game::Initialise()
 {
@@ -28,7 +29,8 @@ bool Game::Initialise()
 	}
 
 	_pos_ball = { WIDTH / 2, HEIGHT / 2 };
-	_pos_pad = { 2*PADDLE_THICKNESS , HEIGHT / 2 };
+	_pos_pad_l = { 2*PADDLE_THICKNESS , HEIGHT / 2 };
+	_pos_pad_r = { WIDTH - 2*PADDLE_THICKNESS , HEIGHT / 2 };
 
 	std::default_random_engine gen;
 	std::uniform_real_distribution<float> dist_y(70,100);
@@ -51,6 +53,17 @@ void Game::RunLoop()
 	{
 		ProcessInput();
 		UpdateGame();
+		if (_pos_ball.x < 0)
+		{
+			std::cout << "Cháil Imreoir a hAon." << std::endl;
+			_IsRunning = false;
+		}	
+		else if (_pos_ball.x > WIDTH)
+		{
+			std::cout << "Cháil Imreoir a Dó." << std::endl;
+			_IsRunning = false;
+		}
+			
 		GenerateOutput();
 	}
 }
@@ -69,11 +82,16 @@ void Game::ProcessInput(){
 	const uint8_t * state = SDL_GetKeyboardState(NULL);
 	if (state[SDL_SCANCODE_ESCAPE])
 		_IsRunning = false;
-	_paddle_dir = NONE;
+	_paddle_dir_l = NONE;
 	if ( state[SDL_SCANCODE_W] && !state[SDL_SCANCODE_S])
-		_paddle_dir = UP;
+		_paddle_dir_l = UP;
 	if (!state[SDL_SCANCODE_W] &&  state[SDL_SCANCODE_S])
-		_paddle_dir = DOWN;
+		_paddle_dir_l = DOWN;
+	_paddle_dir_r = NONE;
+	if ( state[SDL_SCANCODE_I] && !state[SDL_SCANCODE_K])
+		_paddle_dir_r = UP;
+	if (!state[SDL_SCANCODE_I] &&  state[SDL_SCANCODE_K])
+		_paddle_dir_r = DOWN;
 }
 
 void Game::UpdateGame()
@@ -87,14 +105,23 @@ void Game::UpdateGame()
 	// Clamp max dt
 	dt = dt > 0.05f ? 0.05f : dt;
 	// Update game objects as f(dt)
-	if (_paddle_dir != 0)
+	if (_paddle_dir_l != 0)
 	{
-		_pos_pad.y += static_cast<int>(_paddle_dir) * 300.0f * dt;
-		if (_pos_pad.y < (PADDLE_HEIGHT/2.0f + WALL_THICKNESS))
-			_pos_pad.y = PADDLE_HEIGHT/2.0f + WALL_THICKNESS;
-		else if (_pos_pad.y > (HEIGHT - PADDLE_HEIGHT/2.0f - WALL_THICKNESS))
-			_pos_pad.y = HEIGHT - PADDLE_HEIGHT/2.0f - WALL_THICKNESS;
+		_pos_pad_l.y += static_cast<int>(_paddle_dir_l) * PADDLE_SPEED * dt;
+		if (_pos_pad_l.y < (PADDLE_HEIGHT/2.0f + WALL_THICKNESS))
+			_pos_pad_l.y = PADDLE_HEIGHT/2.0f + WALL_THICKNESS;
+		else if (_pos_pad_l.y > (HEIGHT - PADDLE_HEIGHT/2.0f - WALL_THICKNESS))
+			_pos_pad_l.y = HEIGHT - PADDLE_HEIGHT/2.0f - WALL_THICKNESS;
 	}
+	if( 2 == _nplayers )
+		if (_paddle_dir_r != 0)
+		{
+			_pos_pad_r.y += static_cast<int>(_paddle_dir_r) * PADDLE_SPEED * dt;
+			if (_pos_pad_r.y < (PADDLE_HEIGHT/2.0f + WALL_THICKNESS))
+				_pos_pad_r.y = PADDLE_HEIGHT/2.0f + WALL_THICKNESS;
+			else if (_pos_pad_r.y > (HEIGHT - PADDLE_HEIGHT/2.0f - WALL_THICKNESS))
+				_pos_pad_r.y = HEIGHT - PADDLE_HEIGHT/2.0f - WALL_THICKNESS;
+		}
 
 	_pos_ball.x += _vel_ball.x *dt;
 	_pos_ball.y += _vel_ball.y *dt;
@@ -103,25 +130,46 @@ void Game::UpdateGame()
 	if ((_pos_ball.y <= WALL_THICKNESS && _vel_ball.y < 0.0f)
 			||(_pos_ball.y >= HEIGHT-WALL_THICKNESS && _vel_ball.y > 0.0f)) 
 		_vel_ball.y *= -1;
-	if (_pos_ball.x >= WIDTH - WALL_THICKNESS && _vel_ball.x > 0.0f)
+	if (1 == _nplayers && _pos_ball.x >= WIDTH - WALL_THICKNESS && _vel_ball.x > 0.0f)
 		_vel_ball.x *= -1;
-	if (_pos_ball.y < _pos_pad.y + PADDLE_HEIGHT/2.0f && _pos_ball.y > _pos_pad.y - PADDLE_HEIGHT/2.0f
-			&& _pos_ball.x < _pos_pad.x + PADDLE_THICKNESS/2.0f && _pos_ball.x > _pos_pad.x - PADDLE_THICKNESS
+	if (_pos_ball.y < _pos_pad_l.y + PADDLE_HEIGHT/2.0f && _pos_ball.y > _pos_pad_l.y - PADDLE_HEIGHT/2.0f
+			&& _pos_ball.x < _pos_pad_l.x + PADDLE_THICKNESS/2.0f && _pos_ball.x > _pos_pad_l.x - PADDLE_THICKNESS/2.0f
 			&& _vel_ball.x < 0.0f)
 	{
-		if ((_pos_ball.y > _pos_pad.y + PADDLE_HEIGHT/4.0f
+		if ((_pos_ball.y > _pos_pad_l.y + PADDLE_HEIGHT/4.0f
 				   	&& _vel_ball.y > 0.0f)
-				||(_pos_ball.y < _pos_pad.y - PADDLE_HEIGHT/4.0f 
+				||(_pos_ball.y < _pos_pad_l.y - PADDLE_HEIGHT/4.0f 
 					&& _vel_ball.y < 0.0f))
 			_vel_ball.y *= 1.2f;
-		else if ((_pos_ball.y > _pos_pad.y + PADDLE_HEIGHT/4.0f
+		else if ((_pos_ball.y > _pos_pad_l.y + PADDLE_HEIGHT/4.0f
 				   	&& _vel_ball.y < 0.0f)
-				||(_pos_ball.y < _pos_pad.y - PADDLE_HEIGHT/4.0f 
+				||(_pos_ball.y < _pos_pad_l.y - PADDLE_HEIGHT/4.0f 
 					&& _vel_ball.y > 0.0f))
 			_vel_ball.y /= -1.2f;
 		else
 			_vel_ball.x *= 1.1f;
 		_vel_ball.x *= -1;
+	}
+	if (2 == _nplayers)
+	{
+		if (_pos_ball.y < _pos_pad_r.y + PADDLE_HEIGHT/2.0f && _pos_ball.y > _pos_pad_r.y - PADDLE_HEIGHT/2.0f
+				&& _pos_ball.x > _pos_pad_r.x - PADDLE_THICKNESS/2.0f && _pos_ball.x < _pos_pad_r.x + PADDLE_THICKNESS/2.0f
+				&& _vel_ball.x > 0.0f)
+		{
+			if ((_pos_ball.y > _pos_pad_r.y + PADDLE_HEIGHT/4.0f
+						&& _vel_ball.y > 0.0f)
+					||(_pos_ball.y < _pos_pad_r.y - PADDLE_HEIGHT/4.0f 
+						&& _vel_ball.y < 0.0f))
+				_vel_ball.y *= 1.2f;
+			else if ((_pos_ball.y > _pos_pad_r.y + PADDLE_HEIGHT/4.0f
+						&& _vel_ball.y < 0.0f)
+					||(_pos_ball.y < _pos_pad_r.y - PADDLE_HEIGHT/4.0f 
+						&& _vel_ball.y > 0.0f))
+				_vel_ball.y /= -1.2f;
+			else
+				_vel_ball.x *= 1.1f;
+			_vel_ball.x *= -1;
+		}
 	}
 }
 
@@ -139,14 +187,23 @@ void Game::GenerateOutput()
 	SDL_SetRenderDrawColor(_Renderer, 0, 198, 40, 255);
 	SDL_RenderFillRect (_Renderer, &wall_top);
 	SDL_RenderFillRect (_Renderer, &wall_bot);
-	SDL_RenderFillRect (_Renderer, &wall_right);
+	if ( 1 == _nplayers ) SDL_RenderFillRect (_Renderer, &wall_right);
 	// Paddles
-	SDL_Rect pad {
-		static_cast<int>(_pos_pad.x - PADDLE_THICKNESS/2),
-		static_cast<int>(_pos_pad.y - PADDLE_HEIGHT/2),
+	SDL_Rect padl{
+		static_cast<int>(_pos_pad_l.x - PADDLE_THICKNESS/2),
+		static_cast<int>(_pos_pad_l.y - PADDLE_HEIGHT/2),
 		PADDLE_THICKNESS, PADDLE_HEIGHT
 	};
-	SDL_RenderFillRect (_Renderer, &pad);
+	SDL_RenderFillRect (_Renderer, &padl);
+	if(2 == _nplayers)
+	{
+		SDL_Rect padr{
+			static_cast<int>(_pos_pad_r.x - PADDLE_THICKNESS/2),
+				static_cast<int>(_pos_pad_r.y - PADDLE_HEIGHT/2),
+				PADDLE_THICKNESS, PADDLE_HEIGHT
+		};
+		SDL_RenderFillRect (_Renderer, &padr);
+	}
 	// Ball
 	SDL_Rect ball {
 		static_cast<int>(_pos_ball.x - BALL_THICKNESS/2),
