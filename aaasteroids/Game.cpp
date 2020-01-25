@@ -160,8 +160,8 @@ void Game::LoadData()
 	bg->SetBGTextures(bg_tex);
 	bg->set_scrollSpeed(-200.0f);
 
-	for (int i = 0; i < n_asteroids; i++)
-		new Asteroid(this);
+	for (int i = 0; i < init_asteroids; i++)
+		AddAsteroid(new Asteroid(this));
 }
 
 void Game::UnloadData()
@@ -249,4 +249,15 @@ void Game::RemoveSprite(SpriteComponent* sprite)
 	// Swapping would ruin the ordering
 	auto i = std::find(_sprites.begin(), _sprites.end(), sprite);
 	_sprites.erase(i);
+}
+
+void Game::AddAsteroid(Asteroid* a)
+{
+	_asteroids.emplace_back(a);
+}
+
+void Game::RemoveAsteroid(Asteroid* a)
+{
+	auto ai = std::find(_asteroids.begin(), _asteroids.end(), a);
+	if(ai!=_asteroids.end()) _asteroids.erase(ai);
 }

@@ -3,15 +3,14 @@
 #include "Actor.h"
 #include "CircleComponent.h"
 
-class Asteroid : public Actor
+class Laser : public Actor
 {
 	public:
-		Asteroid(class Game* game);
-		~Asteroid();
+		Laser(class Game* game);
 		void UpdateActor (float dt) override;
 
 		class CircleComponent* get_bounds() {return _bounds;}
 	private:
-		const float ASTEROID_RADIUS = 20.0f;
+		const float LASER_RADIUS = 10.0f;
 		class CircleComponent* _bounds;
 };

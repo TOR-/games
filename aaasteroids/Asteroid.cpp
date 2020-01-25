@@ -16,23 +16,28 @@ Asteroid::Asteroid(Game * game):Actor(game)
 
 	MoveComponent* wmc = new MoveComponent(this);
 	wmc->set_forwardSpeed(Game::INIT_ASTEROID_SPEED);
+
+	_bounds = new CircleComponent(this);
+	_bounds->set_radius(ASTEROID_RADIUS);
+
+	//get_game()->AddAsteroid(this);
 }
 
 Asteroid::~Asteroid()
 {
-	//get_game()->RemoveAsteroid(this);
+	get_game()->RemoveAsteroid(this);
 }
 
 void Asteroid::UpdateActor(float dt)
 {
 	Vector2 pos = get_position();
-	if(pos.x > Game::WIDTH + ASTEROID_WIDTH)
-		pos.x = -ASTEROID_WIDTH;
-	else if(pos.x < -ASTEROID_WIDTH)
-		pos.x = Game::WIDTH + ASTEROID_WIDTH;
-	if(pos.y > Game::HEIGHT + ASTEROID_WIDTH)
-		pos.y = -ASTEROID_WIDTH;
-	else if(pos.y < -ASTEROID_WIDTH)
-		pos.y = Game::HEIGHT + ASTEROID_WIDTH;
+	if(pos.x > Game::WIDTH + ASTEROID_RADIUS)
+		pos.x = -ASTEROID_RADIUS;
+	else if(pos.x < -ASTEROID_RADIUS)
+		pos.x = Game::WIDTH + ASTEROID_RADIUS;
+	if(pos.y > Game::HEIGHT + ASTEROID_RADIUS)
+		pos.y = -ASTEROID_RADIUS;
+	else if(pos.y < -ASTEROID_RADIUS)
+		pos.y = Game::HEIGHT + ASTEROID_RADIUS;
 	set_position(pos);
 }
