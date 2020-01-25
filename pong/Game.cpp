@@ -32,8 +32,8 @@ bool Game::Initialise()
 	_pos_pad_r = { WIDTH - 2*PADDLE_THICKNESS , HEIGHT / 2 };
 
 	std::default_random_engine gen;
-	std::uniform_real_distribution<float> dist_y(70,100);
-	std::uniform_real_distribution<float> dist_x(90,100);
+	std::uniform_real_distribution<float> dist_y(120,150);
+	std::uniform_real_distribution<float> dist_x(120,150);
 
 	for (int i = 0; i < _nballs; i++)
 	{
@@ -157,7 +157,7 @@ void Game::UpdateGame()
 						&& _balls[i].vel.y > 0.0f))
 				_balls[i].vel.y /= -1.2f;
 			else
-				_balls[i].vel.x *= 1.1f;
+				_balls[i].vel.x *= 1.05f;
 			_balls[i].vel.x *= -1;
 			_hits++;
 			std::cout << "Hits: "<<_hits<<std::endl;
@@ -179,7 +179,7 @@ void Game::UpdateGame()
 							&& _balls[i].vel.y > 0.0f))
 					_balls[i].vel.y /= -1.2f;
 				else
-					_balls[i].vel.x *= 1.1f;
+					_balls[i].vel.x *= 1.05f;
 				_balls[i].vel.x *= -1;
 			}
 		}
