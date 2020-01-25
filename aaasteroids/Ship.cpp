@@ -16,7 +16,7 @@ Ship::Ship(Game* game) : Actor(game)
 	asc->SetAnimTextures(antex);
 
 	InputComponent* ic = new InputComponent(this,
-		   	SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_A,
+		   	SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_A, SDL_SCANCODE_D,
 			300.0f, Math::TWO_PI);
 }
 

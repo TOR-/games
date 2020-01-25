@@ -7,12 +7,12 @@ void InputComponent::ProcessInput(const uint8_t* keyState)
 		foreSpeed += _magnitudeForwardVelocity;
 	if (keyState[_keyReverse])
 		foreSpeed -= _magnitudeForwardVelocity;
-	set_magnitudeForwardVelocity(foreSpeed);
+	set_forwardSpeed(foreSpeed);
 
 	float dTheta = 0.0f;
 	if (keyState[_keyPosTheta])
 		dTheta += _magnitudeAngularVelocity;
 	if (keyState[_keyNegTheta])
 		dTheta -= _magnitudeAngularVelocity;
-	set_magnitudeAngularVelocity(dTheta);
+	set_angularSpeed(dTheta);
 }
