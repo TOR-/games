@@ -25,6 +25,13 @@ solution "Own"
 		links { "SDL2", "SDL2_image"}
 		buildoptions {"--std=c++17", "-Wall"}
 
+	project "AAAsteroids"
+		kind "ConsoleApp"
+		language "C++"
+		files { "aaasteroids/**.h", "aaasteroids/**.cpp" }
+		links { "SDL2", "SDL2_image"}
+		buildoptions {"--std=c++17", "-Wall"}
+
 	configuration "debug"
 		defines { "DEBUG" }
 		flags { "Symbols" }
