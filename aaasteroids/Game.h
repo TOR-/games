@@ -28,14 +28,15 @@ class Game
 		void AddAsteroid(class Asteroid* a);
 		void RemoveAsteroid(class Asteroid* a);
 		std::vector<class Asteroid*>& get_asteroids() { return _asteroids; }
-		static const int WIDTH = 1024;
-		static const int HEIGHT = 576;
+		static const int WIDTH = 1366;//1024;
+		static const int HEIGHT = 768;//576;
 		static constexpr float INIT_ASTEROID_SPEED = 150.0f;
 		static constexpr float SHIP_FORE_SPEED = 200.0f;
 		static constexpr float SHIP_TURN_SPEED = 6.0f;
+		static constexpr float SHIP_COOLDOWN = 1.0f;
 		static constexpr float LASER_SPEED = 250.0f;
 		static constexpr float LASER_COOLDOWN = 0.5f;
-		static const int init_asteroids = 20;
+		static const int init_asteroids = 30;
 	private:
 		void ProcessInput();
 		void UpdateGame();

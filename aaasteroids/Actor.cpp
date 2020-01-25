@@ -19,7 +19,7 @@ Actor::~Actor()
 
 void Actor::Update(float dt)
 {
-	if (_state == Active)
+	if (_state == State::Active)
 	{
 		UpdateComponents(dt);
 		UpdateActor(dt);

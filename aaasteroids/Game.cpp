@@ -21,7 +21,8 @@ bool Game::Initialise()
 		return false;
 	}
 
-	_window = SDL_CreateWindow( "AAASTEROIDS", 100, 100, WIDTH, HEIGHT, 0 );
+	//_window = SDL_CreateWindow( "AAASTEROIDS", 100, 100, WIDTH, HEIGHT, 0 );
+	_window = SDL_CreateWindow( "AAASTEROIDS", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN_DESKTOP );
 	if (!_window)
 	{
 		SDL_Log("Failed to create window: %s", SDL_GetError());
@@ -135,8 +136,8 @@ void Game::GenerateOutput()
 void Game::LoadData()
 {
 	_ship = new Ship(this);
-	_ship->set_position(Vector2(100.0f, HEIGHT/2.0f));
-	_ship->set_scale(1.5f);
+	_ship->set_position(Vector2(WIDTH/2.0f, HEIGHT/2.0f));
+	_ship->set_scale(1.0f);
 
 	// Background
 	Actor* bg_actor = new Actor(this);
