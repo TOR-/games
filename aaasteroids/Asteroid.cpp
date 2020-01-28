@@ -13,12 +13,14 @@ Asteroid::Asteroid(Game * game):Actor(game)
 
 	SpriteComponent *sc = new SpriteComponent(this);
 	sc->SetTexture(game->GetTexture("Asteroid.png"));
+	
+	set_scale(Random::GetFloat(0.20f, 2.0f));
 
 	MoveComponent* wmc = new MoveComponent(this);
 	wmc->set_forwardSpeed(Game::INIT_ASTEROID_SPEED);
 
 	_bounds = new CircleComponent(this);
-	_bounds->set_radius(ASTEROID_RADIUS);
+	_bounds->set_radius(ASTEROID_RADIUS*get_scale());
 
 	//get_game()->AddAsteroid(this);
 }
