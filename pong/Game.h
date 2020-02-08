@@ -34,8 +34,8 @@ class Game
 		static const int HEIGHT = 768;
 		static const int WALL_THICKNESS = 20;
 		static const int PADDLE_THICKNESS = WALL_THICKNESS;
-		static const int PADDLE_HEIGHT = 1.0f*HEIGHT;//6*PADDLE_THICKNESS;
-		static const int PADDLE_SPEED = 150.0f;
+		static const int PADDLE_HEIGHT = 0.25f*HEIGHT;//6*PADDLE_THICKNESS;
+		static const int PADDLE_SPEED = 500.0f;
 		static const int BALL_THICKNESS = WALL_THICKNESS;
 
 	private:
