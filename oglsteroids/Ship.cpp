@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <SDL2/SDL.h>
 
-#include "AnimSpriteComponent.h"
 #include "Asteroid.h"
 #include "CircleComponent.h"
 #include "Game.h"
@@ -9,19 +8,14 @@
 #include "Laser.h"
 #include "Math.h"
 #include "Ship.h"
+#include "SpriteComponent.h"
 
 Ship::Ship(Game* game) : Actor(game), _isRespawning(false), _deaths(0)
 {
 	
 
-	AnimSpriteComponent* asc = new AnimSpriteComponent(this);
-	std::vector<SDL_Texture*> antex = {
-		game->GetTexture("Ship01.png"),
-		game->GetTexture("Ship02.png"),
-		game->GetTexture("Ship03.png"),
-		game->GetTexture("Ship04.png")
-	};
-	asc->SetAnimTextures(antex);
+	SpriteComponent* asc = new SpriteComponent(this);
+	asc->SetTexture(game->GetTexture("Ship04.png"));
 
 	InputComponent* ic = new InputComponent(this,
 			SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_A, SDL_SCANCODE_D,

@@ -1,3 +1,5 @@
+#include <GL/glew.h>
+
 #include "Actor.h"
 #include "Game.h"
 #include "SpriteComponent.h"
@@ -13,22 +15,9 @@ SpriteComponent::~SpriteComponent()
 	_owner->get_game()->RemoveSprite(this);
 }
 
-void SpriteComponent::Draw(SDL_Renderer* renderer)
+void SpriteComponent::Draw(Shader* shader)
 {
-	if(_texture)
-	{
-		// Scale and center sprite by owner's scale
-		SDL_Rect r;
-	r.w = static_cast<int>(_texWidth  * _owner->get_scale());
-	r.h = static_cast<int>(_texHeight * _owner->get_scale());
-	r.x = static_cast<int>(_owner->get_position().x - r.w / 2);
-	r.y = static_cast<int>(_owner->get_position().y - r.h / 2);
-
-	SDL_RenderCopyEx( renderer, _texture, nullptr, &r,
-			-Math::rad_to_deg(_owner->get_rotation()),
-			/* SDL positive angle is clockwise, oppposite to unit circle */
-			nullptr, SDL_FLIP_NONE);
-	}
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
 
 void SpriteComponent::SetTexture(SDL_Texture* texture)

@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include <SDL2/SDL_image.h>
 
 #include "Game.h"
@@ -8,9 +10,8 @@
 #include "Asteroid.h"
 #include "Random.h"
 #include "Math.h"
-#include "BGSpriteComponent.h"
 
-Game::Game(const char * assetpath): _assetpath(assetpath), _window(nullptr), _renderer(nullptr), _isRunning(true), _updatingActors(false) {};
+Game::Game(const char * assetpath): _assetpath(assetpath), _window(nullptr), _isRunning(true), _updatingActors(false) {};
 
 bool Game::Initialise()
 {
@@ -21,27 +22,38 @@ bool Game::Initialise()
 		return false;
 	}
 
-	//_window = SDL_CreateWindow( "AAASTEROIDS", 100, 100, WIDTH, HEIGHT, 0 );
-	_window = SDL_CreateWindow( "AAASTEROIDS", 100, 100, WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN_DESKTOP );
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK , SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE             , 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE           , 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE            , 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE           , 8);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER         , 1);
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL   , 1);
+	_window = SDL_CreateWindow( "AAASTEROIDS", 100, 100, WIDTH, HEIGHT
+			, SDL_WINDOW_OPENGL);
 	if (!_window)
 	{
 		SDL_Log("Failed to create window: %s", SDL_GetError());
 		return false;
 	}
-	_renderer = SDL_CreateRenderer( _window, -1
-			, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
-	if (!_renderer)
+	_context = SDL_GL_CreateContext(_window);
+	glewExperimental = GL_TRUE;
+	if (GLEW_OK != glewInit())
 	{
-		SDL_Log("Failed to create renderer: %s", SDL_GetError());
+		SDL_Log("Failed to init GLEW. Exiting...");
+		return false;
+	}
+	glGetError();
+
+	if(!LoadShaders())
+	{
+		SDL_Log("Failed to load shaders. Exiting...");
 		return false;
 	}
 
-	if (IMG_Init(IMG_INIT_PNG) == 0)
-	{
-		SDL_Log("Unable to initialise SDL_image: %s", SDL_GetError());
-		return false;
-	}
-
+	InitSpriteVerts();
 	LoadData();
 
 	_ticksCount = SDL_GetTicks();
@@ -53,8 +65,8 @@ void Game::Shutdown()
 {
 	UnloadData();
 	IMG_Quit();
+	SDL_GL_DeleteContext(_context);
 	SDL_DestroyWindow(_window);
-	SDL_DestroyRenderer(_renderer);
 	SDL_Quit();
 }
 
@@ -102,7 +114,6 @@ void Game::UpdateGame()
 	_ticksCount = SDL_GetTicks();
 
 	// UPDATE GAME OBJECTS AS F(DT)
-	
 	_updatingActors = true;
 	for (auto actor: _actors)
 		actor->Update(dt);
@@ -123,14 +134,16 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-	SDL_RenderClear(_renderer);
-	
-	// DRAW ALL SPRITES
-	for (auto s: _sprites)
-		s->Draw(_renderer);
-	
-	SDL_RenderPresent(_renderer);
+	glClearColor(0.75f, 0.86f, 0.76f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	_spriteShader->SetActive();
+	_spriteVerts->SetActive();
+
+	for(auto s:_sprites)
+		s->Draw(_spriteShader);
+
+	SDL_GL_SwapWindow(_window);
 }
 
 void Game::LoadData()
@@ -140,29 +153,11 @@ void Game::LoadData()
 	_ship->set_scale(1.0f);
 
 	// Background
-	Actor* bg_actor = new Actor(this);
-	bg_actor->set_position(Vector2(WIDTH/2.0f, HEIGHT/2.0f));
+	//Actor* bg_actor = new Actor(this);
+	//bg_actor->set_position(Vector2(WIDTH/2.0f, HEIGHT/2.0f));
 	
-	BGSpriteComponent* bg = new BGSpriteComponent(bg_actor);
-	bg->set_screenSize(Vector2(WIDTH, HEIGHT));
-	std::vector<SDL_Texture*> bg_tex = { 
-		GetTexture("Farback01.png"),
-		GetTexture("Farback02.png")
-	};
-	bg->SetBGTextures(bg_tex);
-	bg->set_scrollSpeed(-100.0f);
-
-	bg = new BGSpriteComponent(bg_actor, 50);
-	bg->set_screenSize(Vector2(WIDTH, HEIGHT));
-	bg_tex = { 
-		GetTexture("Stars.png"),
-		GetTexture("Stars.png") 
-	};
-	bg->SetBGTextures(bg_tex);
-	bg->set_scrollSpeed(-200.0f);
-
-	for (int i = 0; i < init_asteroids; i++)
-		AddAsteroid(new Asteroid(this));
+	//for (int i = 0; i < init_asteroids; i++)
+	//	AddAsteroid(new Asteroid(this));
 }
 
 void Game::UnloadData()
@@ -195,7 +190,7 @@ SDL_Texture* Game::GetTexture(const std::string& filename)
 			return nullptr;
 		}
 
-		tex = SDL_CreateTextureFromSurface(_renderer, surf);
+		tex = 0;//SDL_CreateTextureFromSurface(_renderer, surf);
 		SDL_FreeSurface(surf);
 		if (!tex)
 		{
@@ -261,4 +256,28 @@ void Game::RemoveAsteroid(Asteroid* a)
 {
 	auto ai = std::find(_asteroids.begin(), _asteroids.end(), a);
 	if(ai!=_asteroids.end()) _asteroids.erase(ai);
+}
+
+void Game::InitSpriteVerts()
+{
+	float vtxBuf[] = {
+		-0.5f,  0.5f,  0.0f,
+		 0.5f,  0.5f,  0.0f,
+		 0.5f, -0.5f,  0.0f,
+		-0.5f, -0.5f,  0.0f
+	};
+	unsigned idxBuf[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+	_spriteVerts = new VertexArray(vtxBuf, 4, idxBuf, 6);
+}
+
+bool Game::LoadShaders()
+{
+	_spriteShader = new Shader();
+	if(!_spriteShader->Load("oglsteroids/shaders/basic.vert", "oglsteroids/shaders/basic.frag"))
+		return false;
+	_spriteShader->SetActive();
+	return true;
 }

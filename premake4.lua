@@ -36,7 +36,7 @@ solution "Own"
 		kind "ConsoleApp"
 		language "C++"
 		files { "oglsteroids/**.h", "oglsteroids/**.cpp" }
-		links { "SDL2", "SDL2_image"}
+		links { "SDL2", "SDL2_image", "GL", "GLEW"}
 		buildoptions {"--std=c++17", "-Wall"}
 
 	configuration "debug"
